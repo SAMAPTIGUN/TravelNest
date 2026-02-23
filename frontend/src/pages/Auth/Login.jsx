@@ -3,13 +3,15 @@ import PasswordInput from "../../components/PasswordInput"
 import { useNavigate } from "react-router-dom"
 import axiosInstance from "../../utils/axiosInstance"
 import { validateEmail } from "../../utils/hlper"
-
+import { useDispatch,useSelector } from "react-redux"
+import {signInStart,signInSuccess} from "../../redux/slice/userSlice"
 const Login = () => {
    const navigate = useNavigate()
-    
+     const dispatch = useDispatch()
   const [email, setEmail] = useState("")
    const [password, setPassword] = useState("")
      const [error, setError] = useState("")
+      const { loading} = useSelector((state) => state.user)
 
      const handleSubmit = async (e) => {
       e.preventDefault()
@@ -26,7 +28,7 @@ const Login = () => {
 
     // Login API call
     try {
-    
+     dispatch(signInStart())
 
       const response = await axiosInstance.post("/auth/signin", {
         email,
@@ -34,6 +36,7 @@ const Login = () => {
       })
 
       if (response.data) {
+        dispatch(signInSuccess(response.data))
         navigate("/")
       }
       
@@ -85,9 +88,15 @@ const Login = () => {
 
               {error && <p className="text-red-500 text-xs pb-1">{error}</p>}
 
-            <button type="submit" className="btn-primary">
+            {loading ? (
+              <p className="animate-pulse w-full text-center btn-primary">
+                LOADING...
+              </p>
+            ) : (
+              <button type="submit" className="btn-primary">
                 LOGIN
               </button>
+            )}
               <p className="text-xs text-slate-500 text-center my-4">Or</p>
             <button
               type="submit"
