@@ -7,9 +7,15 @@ import { IoMdAdd } from "react-icons/io"
 import Modal from "react-modal"
 import AddEditTravelStory from '../../components/AddEditTravelStory'
 import ViewTravelStory from './ViewTravelStory'
+import EmptyCard from '../../components/EmptyCard'
+import { getEmptyCardMessage } from '../../utils/hlper'
 
 const Home = () => {
    const [allStories, setAllStories] = useState([])
+
+   const [searchQuery, setSearchQuery] = useState("")
+
+    const [filterType, setFilterType] = useState("")
 
   // console.log(allStories)
   const [openAddEditModal, setOpenAddEditModal] = useState({
@@ -84,6 +90,29 @@ const Home = () => {
     }
   }
 
+  // search story
+   const onSearchStory = async (query) => {
+    try {
+      const response = await axiosInstance.get("/travel-story/search", {
+        params: {
+          query: query,
+        },
+      })
+
+      if (response.data && response.data.stories) {
+        setFilterType("search")
+        setAllStories(response.data.stories)
+      }
+    } catch (error) {
+      console.log("Something went wrong. Please try again.")
+    }
+  }
+
+  // Clear search
+  const handleClearSearch = () => {
+    setFilterType("")
+    getAllTravelStories()
+  }
 
    useEffect(() => {
     getAllTravelStories()
@@ -93,7 +122,10 @@ const Home = () => {
 
   return (
   <>
-  <Navbar/>
+  <Navbar  searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        onSearchNote={onSearchStory}
+        handleClearSearch={handleClearSearch}/>
 
   <div className="container mx-auto py-10">
 <div className="flex gap-7">
@@ -118,7 +150,19 @@ const Home = () => {
       })}
     </div>
   ): (
-    <div>Empty Card Here </div>
+              <EmptyCard
+                imgSrc={
+                  "https://images.pexels.com/photos/5706021/pexels-photo-5706021.jpeg?auto=compress&cs=tinysrgb&w=600"
+                }
+                message={getEmptyCardMessage(filterType)}
+                setOpenAddEditModal={() =>
+                  setOpenAddEditModal({
+                    isShown: true,
+                    type: "add",
+                    data: null,
+                  })
+                }
+              />
   )}
 </div>
 <div className="w-[320px]"></div>
