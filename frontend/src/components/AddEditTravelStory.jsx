@@ -1,13 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState } from "react"
 import { IoMdAdd, IoMdClose } from "react-icons/io"
 import { MdOutlineDeleteOutline, MdOutlineUpdate } from "react-icons/md"
-import DateSelector from './DateSelector'
-import ImageSelector from './ImageSelector'
-import TagInput from './TagInput'
+import DateSelector from "./DateSelector"
+import ImageSelector from "./ImageSelector"
+import TagInput from "./TagInput"
 import axiosInstance from "../utils/axiosInstance"
-import moment from 'moment'
+import moment from "moment"
 import { toast } from "react-toastify"
-import uploadImage from '../utils/uploadImage'
+import uploadImage from "../utils/uploadImage"
 
 const AddEditTravelStory = ({
   storyInfo,
@@ -22,6 +22,7 @@ const AddEditTravelStory = ({
   const [visitedLocation, setVisitedLocation] = useState(
     storyInfo?.visitedLocation || []
   )
+
   const [error, setError] = useState("")
 
   const addNewTravelStory = async () => {
@@ -57,7 +58,7 @@ const AddEditTravelStory = ({
     }
   }
 
-    const updateTravelStory = async () => {
+  const updateTravelStory = async () => {
     const storyId = storyInfo._id
 
     try {
@@ -110,7 +111,7 @@ const AddEditTravelStory = ({
     }
   }
 
-     const handleAddOrUpdateClick = () => {
+  const handleAddOrUpdateClick = () => {
     if (!title) {
       setError("Please enter the title")
       return
@@ -130,61 +131,102 @@ const AddEditTravelStory = ({
     }
   }
 
-   const handleDeleteStoryImage = async () => {
-    
+  const handleDeleteStoryImage = async () => {
+    // Deleting the image
+    const deleteImageResponse = await axiosInstance.delete(
+      "/travel-story/delete-image",
+      {
+        params: {
+          imageUrl: storyInfo.imageUrl,
+        },
+      }
+    )
+
+    if (deleteImageResponse.data) {
+      const storyId = storyInfo._id
+
+      const postData = {
+        title,
+        story,
+        visitedLocation,
+        visitedDate: moment().valueOf(),
+        imageUrl: "",
+      }
+
+      // updating story
+
+      const response = await axiosInstance.post(
+        "/travel-story/edit-story/" + storyId,
+        postData
+      )
+
+      if (response.data) {
+        toast.success("Story image deleted successfully")
+
+        setStoryImg(null)
+
+        getAllTravelStories()
+      }
+    }
   }
 
   return (
-    <div className='relative'>
+    <div className="relative">
       <div className="flex items-center justify-between">
-         <h5 className="text-xl font-medium text-slate-700">
-           {type === "add" ? "Add Story" : "Update Story"} 
-         </h5>
-          <div>
+        <h5 className="text-xl font-medium text-slate-700">
+          {type === "add" ? "Add Story" : "Update Story"}
+        </h5>
+
+        <div>
           <div className="flex items-center gap-3 bg-cyan-50/50 p-2 rounded-l-lg">
-               {type === "add" ? (
+            {type === "add" ? (
               <button class="btn-small" onClick={handleAddOrUpdateClick}>
                 <IoMdAdd className="text-lg" /> ADD STORY
               </button>
-            ) : (<>
-            <button className="btn-small" onClick={handleAddOrUpdateClick}>
+            ) : (
+              <>
+                <button className="btn-small" onClick={handleAddOrUpdateClick}>
                   <MdOutlineUpdate className="text-lg" /> UPDATE STORY
                 </button>
 
                 <button className="btn-small btn-delete">
                   <MdOutlineDeleteOutline className="text-lg" /> DELETE STORY
                 </button>
-                </>)}
+              </>
+            )}
 
-              <button class="" onClick={onClose}>
+            <button class="" onClick={onClose}>
               <IoMdClose className="text-xl text-slate-400" />
             </button>
-              </div>
-              {error && (
+          </div>
+
+          {error && (
             <p className="text-red-500 text-xs pt-2 text-right">{error}</p>
           )}
-              </div>
+        </div>
       </div>
+
       <div>
-         <div className="flex flex-1 flex-col gap-2 pt-4">
-            <label className="input-label">TITLE</label>
-             <input
+        <div className="flex flex-1 flex-col gap-2 pt-4">
+          <label className="input-label">TITLE</label>
+
+          <input
             type="text"
             className="text-2xl text-slate-900 outline-none"
             placeholder="Once Upon A Time..."
-             value={title}
+            value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
-              <div className="my-3">
+
+          <div className="my-3">
             <DateSelector date={visitedDate} setDate={setVisitedDate} />
           </div>
 
-                  <ImageSelector
+          <ImageSelector
             image={storyImg}
             setImage={setStoryImg}
             handleDeleteImage={handleDeleteStoryImage}
           />
-         
 
           <div className="flex flex-col gap-2 mt-4">
             <label className="input-label">STORY</label>
