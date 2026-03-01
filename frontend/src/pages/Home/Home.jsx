@@ -6,6 +6,7 @@ import { ToastContainer, toast } from "react-toastify"
 import { IoMdAdd } from "react-icons/io"
 import Modal from "react-modal"
 import AddEditTravelStory from '../../components/AddEditTravelStory'
+import ViewTravelStory from './ViewTravelStory'
 
 const Home = () => {
    const [allStories, setAllStories] = useState([])
@@ -16,6 +17,12 @@ const Home = () => {
     type: "add",
     data: null,
   })
+
+   const [openViewModal, setOpenViewModal] = useState({
+    isShown: false,
+    data: null,
+  })
+
 
   // Get all travel stories
   const getAllTravelStories = async () => {
@@ -34,7 +41,7 @@ const Home = () => {
   // Handle Edit Story
   const handleEdit = async (data) => {}
 
-  const handleViewStory = (data) => {}
+  const handleViewStory = (data) => { setOpenViewModal({ isShown: true, data })}
 
   const updateIsFavourite = async (storyData) => {
     const storyId = storyData._id
@@ -117,6 +124,35 @@ const Home = () => {
           getAllTravelStories={getAllTravelStories}
         />
       </Modal>
+
+     {/* View travel story modal */}
+      <Modal
+        isOpen={openViewModal.isShown}
+        onRequestClose={() => {}}
+        style={{
+          overlay: {
+            backgroundColor: "rgba(0,0,0,0.2)",
+            zIndex: 999,
+          },
+        }}
+        appElement={document.getElementById("root")}
+        className="w-[80vw] md:w-[40%] h-[80vh] bg-white rounded-lg mx-auto mt-14 p-5 overflow-y-scroll scrollbar z-50"
+      >
+        <ViewTravelStory
+          storyInfo={openViewModal.data || null}
+          onClose={() => {
+            setOpenViewModal((prevState) => ({ ...prevState, isShown: false }))
+          }}
+          onEditClick={() => {
+            setOpenViewModal((prevState) => ({ ...prevState, isShown: false }))
+            handleEdit(openViewModal.data || null)
+          }}
+          onDeleteClick={() => {
+            deleteTravelStory(openViewModal.data || null)
+          }}
+        />
+      </Modal>     
+
    <button
         className="w-16 h-16 flex items-center justify-center rounded-full bg-[#05b6d3] hover:bg-cyan-400 fixed right-10 bottom-10"
         onClick={() => {
